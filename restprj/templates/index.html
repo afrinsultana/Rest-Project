@@ -16,9 +16,16 @@
 <body ng-app="myapp">
     <div class="container" ng-controller="myctrl">
         <!-- Button trigger modal -->
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" ng-click="add()">
     Add New Employee
   </button>
+
+  <div class="alert alert-warning alert-dismissible fade show" role="alert">
+    <strong>[[msg]]</strong>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+
+  
   <table class="table table-bordered" >
     <thead>
       <tr>
@@ -67,25 +74,25 @@
         </div>
         <div class="modal-body">
           <form action="" name="empform">
-            {% csrf_token %}
+            [[ csrf_token ]]
             <div class="mb-3">
                 <label for="txtname" class="form-label">Name</label>
-                <input type="text" class="form-control" id="txtname" >
+                <input type="text" class="form-control" id="txtname"  ng-model="current.name" required="required" />
             </div>
 
             <div class="mb-3">
                 <label for="txtemail" class="form-label">E-mail</label>
-                <input type="text" class="form-control" id="txtemail" >
+                <input type="text" class="form-control" id="txtemail" ng-model="current.email" required="required" />
             </div>
             <div class="mb-3">
                 <label for="txtsalary" class="form-label">Salary</label>
-                <input type="text" class="form-control" id="txtsalary" >
+                <input type="text" class="form-control" id="txtsalary" ng-model="current.salary" required="required" />
             </div>
         </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Save changes</button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" ng-hide="isedit" ng-click="insert()">Save changes</button>
         </div>
       </div>
     </div>
@@ -113,6 +120,43 @@
             },function(response){
                 $scope.msg='Something Went Wrong'
             } );
+            
+           //Data Insert Here
+            $scope.insert=function(){
+              var newemp=angular.copy($scope.current);
+              var url='http://127.0.0.1:8000/emp/';
+              //alert(newemp.name);
+              $http.post(url,newemp)
+              .then(function(response){
+                //alert(response.data);
+                $scope.employees.push(response.data);
+                $scope.current=null;
+                $scope.isedit=false;
+                $scope.msg='Data Inserted Successfully';
+                $scope.reloadroute();
+
+            },function(response){
+                $scope.msg=response.statusText+'\r\n';
+            } );
+
+            };
+           //End of data Insert
+            $scope.add=function(){
+              $scope.isedit=false;
+
+           };
+
+           $scope.showheading=function(){
+             return $scope.isedit?'Modify record':'Add record';
+           };
+           $scope.reloadroute=function(){
+            setTimeout(function(){
+              $scope.msg="";
+              $window.location.reload();
+            },5000);
+          };
+
+
 
         });
 
